@@ -1,6 +1,8 @@
 package server
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -8,6 +10,12 @@ import (
 
 type Handler struct {
 	server *Server
+}
+
+type Answer struct {
+	PlayerID   string `json:"player_id"`
+	QuestionID int    `json:"question_id"`
+	Answer     int    `json:"answer"`
 }
 
 func NewHandler(s *Server) *Handler {
@@ -18,8 +26,7 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		// Tüm kaynaklara izin veriyoruz
-		return true
+		return true // Tüm kaynaklara izin veriyoruz
 	},
 }
 
@@ -48,6 +55,23 @@ func (h *Handler) ServeWs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *Handler) HandleAnswer(w http.ResponseWriter, r *http.Request) {
+	var answer Answer
+	err := json.NewDecoder(r.Body).Decode(&answer)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	h.server.mutex.Lock()
+	defer h.server.mutex.Unlock()
+
+	if _, exists := h.server.answers[answer.QuestionID]; !exists {
+		h.server.answers[answer.QuestionID] = make(map[string]int)
+	}
+	h.server.answers[answer.QuestionID][answer.PlayerID] = answer.Answer
+	w.WriteHeader(http.StatusOK)
+}
+
 func (h *Handler) sendResponse(conn *websocket.Conn, response map[string]interface{}) {
 	conn.WriteJSON(response)
 }
@@ -61,6 +85,20 @@ func (h *Handler) BroadcastQuestion(question map[string]interface{}) {
 			"status":   "quiz",
 			"question": question,
 			"timeout":  10,
+		}
+		fmt.Printf("Sending question to client: %+v\n", response) // Hata ayıklama için
+		h.sendResponse(conn, response)
+	}
+}
+
+func (h *Handler) ShowCorrectAnswer(question map[string]interface{}) {
+	h.server.mutex.Lock()
+	defer h.server.mutex.Unlock()
+
+	for _, conn := range h.server.queue {
+		response := map[string]interface{}{
+			"status":         "answer",
+			"correct_answer": question["answer"],
 		}
 		h.sendResponse(conn, response)
 	}

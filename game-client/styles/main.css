@@ -18,3 +18,27 @@ body {
 #quiz {
     margin-top: 20px;
 }
+
+button.choice {
+    display: block;
+    margin: 10px 0;
+    padding: 10px;
+    width: 200px;
+    background-color: #008CBA; /* Mavi renkte şıklar */
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button.choice.correct {
+    background-color: #4CAF50; /* Yeşil */
+}
+
+button.choice.incorrect {
+    background-color: #f44336; /* Kırmızı */
+}
+
+button.choice:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
