@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	srv := server.NewServer(5) // Örnek max kullanıcı sayısı
+	srv := server.NewServer(2) // Örnek max kullanıcı sayısı
 
 	corsHandler := func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

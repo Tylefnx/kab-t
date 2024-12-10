@@ -35,6 +35,10 @@ func (h *Handler) HandleAnswer(w http.ResponseWriter, r *http.Request) {
 		h.server.answers[answer.QuestionID] = make(map[string]int)
 	}
 	h.server.answers[answer.QuestionID][answer.PlayerID] = answer.Answer
+
+	fmt.Printf("Received answer: %+v\n", answer)               // Hata ayıklama için loglayalım
+	fmt.Printf("Current answers map: %+v\n", h.server.answers) // Tüm cevapları loglayalım
+
 	w.WriteHeader(http.StatusOK)
 }
 

@@ -1,9 +1,7 @@
-// question.js
-
 import { sendWebSocketMessage } from './websocket.js';
 
 export function submitAnswer(playerID, questionID, answer) {
-    console.log(`Submitted answer: ${answer}`);
+    console.log(`Submitted answer: ${answer}, PlayerID: ${playerID}, QuestionID: ${questionID}`);
     sendWebSocketMessage({
         player_id: playerID,
         question_id: questionID,

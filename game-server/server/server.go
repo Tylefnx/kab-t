@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"game-server/models"
 	"game-server/question"
 	"sync"
 	"time"
@@ -44,5 +45,26 @@ func (s *Server) StartQuiz() {
 		s.calculateScores(question)
 		time.Sleep(2 * time.Second) // 2 saniye doğru cevabı gösterme süresi
 	}
-	s.queue = []*websocket.Conn{}
+	s.BroadcastLeaderboard()
+	s.queue = []*websocket.Conn{} // Bu satırı en sona taşıyalım
+}
+
+func (s *Server) BroadcastLeaderboard() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	scores := []models.Player{}
+	for id, score := range s.scores {
+		scores = append(scores, models.Player{ID: id, Score: score})
+	}
+
+	fmt.Printf("Broadcasting leaderboard: %+v\n", scores) // Gönderilen veriyi loglayalım
+
+	for _, conn := range s.queue {
+		response := map[string]interface{}{
+			"status": "leaderboard",
+			"scores": scores,
+		}
+		s.handler.sendResponse(conn, response)
+	}
 }

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -40,5 +41,10 @@ func ServeWs(s *Server, w http.ResponseWriter, r *http.Request) {
 }
 
 func SendResponse(conn *websocket.Conn, response map[string]interface{}) {
-	conn.WriteJSON(response)
+	err := conn.WriteJSON(response)
+	if err != nil {
+		fmt.Printf("Error sending response: %v\n", err)
+	} else {
+		fmt.Printf("Sent response: %+v\n", response)
+	}
 }
