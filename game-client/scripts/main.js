@@ -5,8 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerElement = document.getElementById('timer');
     let timer;
 
-    // WebSocket ile sunucuya bağlanma
-    const socket = new WebSocket('ws://localhost:8080');
+    const socket = new WebSocket('ws://localhost:8080/ws');
 
     socket.onopen = () => {
         console.log('Connected to the server');
