@@ -6,6 +6,23 @@
 #include "parson.h"
 #include "functions.h"
 
+void rejoin_queue()
+{
+    struct lws_client_connect_info ccinfo = {0};
+    ccinfo.context = lws_get_context(client_wsi);
+    ccinfo.address = "localhost";
+    ccinfo.port = 8080;
+    ccinfo.path = "/ws"; // Bu yolun doğru olduğundan emin olun
+    ccinfo.host = lws_canonical_hostname(lws_get_context(client_wsi));
+    ccinfo.origin = "origin";
+    ccinfo.protocol = protocols[0].name;
+
+    if (!lws_client_connect_via_info(&ccinfo))
+        mvwprintw(win, 2, 1, "Failed to re-enter queue.");
+    else
+        mvwprintw(win, 2, 1, "Successfully re-entered queue.");
+}
+
 int connect_and_join_queue(struct lws_context **context, const char *address, int port, const char *path, const char *protocol)
 {
     struct lws_context_creation_info info;
@@ -121,7 +138,7 @@ void handle_message(const char *message)
         const char *question = json_object_get_string(question_object, "text");
         JSON_Array *choices_array = json_object_get_array(question_object, "choices");
         int question_id = (int)json_object_get_number(question_object, "id");
-        int timeout = 3; // Her sorunun süresi 10 saniye
+        int timeout = 5; // Her sorunun süresi 10 saniye
         int correct_answer = (int)json_object_get_number(question_object, "answer");
 
         if (!question || !choices_array)
@@ -219,27 +236,7 @@ void handle_message(const char *message)
         mvwprintw(win, 1, 1, "Re-entering queue...");
         wrefresh(win);
 
-        ccinfo.context = lws_get_context(client_wsi);
-        ccinfo.address = "localhost";
-        ccinfo.port = 8080;
-        ccinfo.path = "/ws"; // Bu yolun doğru olduğundan emin olun
-        ccinfo.host = lws_canonical_hostname(lws_get_context(client_wsi));
-        ccinfo.origin = "origin";
-        ccinfo.protocol = protocols[0].name;
-        // if (connect_and_join_queue(ccinfo.context, "localhost", 8080, "/ws", protocols[0].name) != 0)
-        // {
-        //     endwin();
-        //     return -1;
-        // }
-
-        if (!lws_client_connect_via_info(&ccinfo))
-        {
-            mvwprintw(win, 2, 1, "Failed to re-enter queue.");
-        }
-        else
-        {
-            mvwprintw(win, 2, 1, "Successfully re-entered queue.");
-        }
+        rejoin_queue();
 
         wrefresh(win);
         json_value_free(root_value); // JSON nesnesini serbest bırakmayı unutmayalım
