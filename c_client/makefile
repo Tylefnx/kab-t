@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -I.
+CFLAGS = -Wall -g -fsanitize=address -I.
 LIBS = -lncurses -lwebsockets -lparson
 
 TARGET = program

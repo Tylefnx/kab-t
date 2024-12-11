@@ -7,6 +7,7 @@
 
 static int interrupted;
 static struct lws *client_wsi;
+static int current_question_id;
 
 void show_question(WINDOW *win, const char *question, const int *choices, int num_choices) {
     werase(win);
@@ -17,6 +18,22 @@ void show_question(WINDOW *win, const char *question, const int *choices, int nu
         mvwprintw(win, i + 3, 1, "%d. %d", i + 1, choices[i]);
     }
     wrefresh(win);
+}
+
+void send_answer(int answer) {
+    char message[256];
+    JSON_Value *root_value = json_value_init_object();
+    JSON_Object *root_object = json_value_get_object(root_value);
+
+    json_object_set_number(root_object, "question_id", current_question_id);
+    json_object_set_number(root_object, "answer", answer);
+
+    char *serialized_string = json_serialize_to_string(root_value);
+    snprintf(message, sizeof(message), "%s", serialized_string);
+    json_free_serialized_string(serialized_string);
+    json_value_free(root_value);
+
+    lws_write(client_wsi, (unsigned char *)message, strlen(message), LWS_WRITE_TEXT);
 }
 
 void handle_message(const char *message) {
@@ -51,6 +68,8 @@ void handle_message(const char *message) {
             return;
         }
 
+        current_question_id = (int)json_object_get_number(question_object, "id");
+
         int num_choices = json_array_get_count(choices_array);
         int choices[num_choices];
 
@@ -59,6 +78,12 @@ void handle_message(const char *message) {
         }
 
         show_question(win, question, choices, num_choices);
+
+        // Kullanıcıdan cevap al
+        int ch = wgetch(win);
+        int answer = ch - '0';
+
+        send_answer(answer);
     } else if (status && strcmp(status, "answer") == 0) {
         // Handle answer status
         int correct_answer = (int)json_object_get_number(root_object, "correct_answer");
