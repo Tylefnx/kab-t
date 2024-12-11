@@ -2,12 +2,22 @@ import { sendWebSocketMessage } from './websocket.js';
 
 export function submitAnswer(playerID, questionID, answer) {
     console.log(`Submitted answer: ${answer}, PlayerID: ${playerID}, QuestionID: ${questionID}`);
-    sendWebSocketMessage({
-        player_id: playerID,
-        question_id: questionID,
-        answer: answer,
-    });
+
+    fetch('http://localhost:8080/answer', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            player_id: playerID,
+            question_id: questionID,
+            answer: answer,
+        }),
+    })
 }
+
+
+
 
 export function showQuestion(question, onSubmitAnswer) {
     const questionElement = document.getElementById('question');

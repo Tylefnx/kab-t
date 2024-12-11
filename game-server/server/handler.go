@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"game-server/models"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -20,14 +21,26 @@ func NewHandler(s *Server) *Handler {
 func (h *Handler) ServeWs(w http.ResponseWriter, r *http.Request) {
 	ServeWs(h.server, w, r)
 }
-
 func (h *Handler) HandleAnswer(w http.ResponseWriter, r *http.Request) {
-	var answer models.Answer
-	err := json.NewDecoder(r.Body).Decode(&answer)
+	fmt.Println("HandleAnswer fonksiyonu çağrıldı")
+
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		fmt.Printf("Error reading body: %v\n", err)
 		return
 	}
+	fmt.Printf("REQUEST BODY: %s\n", body)
+
+	var answer models.Answer
+	err = json.Unmarshal(body, &answer)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		fmt.Printf("Error decoding JSON: %v\n", err)
+		return
+	}
+	fmt.Printf("Decoded answer: %+v\n", answer)
+
 	h.server.mutex.Lock()
 	defer h.server.mutex.Unlock()
 
@@ -36,8 +49,9 @@ func (h *Handler) HandleAnswer(w http.ResponseWriter, r *http.Request) {
 	}
 	h.server.answers[answer.QuestionID][answer.PlayerID] = answer.Answer
 
-	fmt.Printf("Received answer: %+v\n", answer)               // Hata ayıklama için loglayalım
-	fmt.Printf("Current answers map: %+v\n", h.server.answers) // Tüm cevapları loglayalım
+	fmt.Printf("Received answer: %+v\n", answer)
+	fmt.Printf("Current answers map for question %d: %+v\n", answer.QuestionID, h.server.answers[answer.QuestionID])
+	fmt.Printf("Total answers map: %+v\n", h.server.answers)
 
 	w.WriteHeader(http.StatusOK)
 }
