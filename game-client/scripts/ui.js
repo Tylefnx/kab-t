@@ -1,5 +1,3 @@
-// ui.js
-
 export function updateStatus(status) {
     const statusElement = document.getElementById('status');
     statusElement.innerText = status;

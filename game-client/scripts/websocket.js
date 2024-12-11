@@ -1,5 +1,3 @@
-// websocket.js
-
 let socket;
 
 export function setupWebSocket(url, onMessageCallback) {
@@ -11,7 +9,7 @@ export function setupWebSocket(url, onMessageCallback) {
 
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        console.log('Received data:', data); // Debugging için
+        console.log('Received data:', data);
         onMessageCallback(data);
     };
 

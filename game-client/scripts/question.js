@@ -27,14 +27,12 @@ export function showQuestion(question, onSubmitAnswer) {
     choicesElement.innerHTML = '';
 
     if (question.choices) {
-        console.log('Question choices:', question.choices); // Hata ayıklama için
         question.choices.forEach(choice => {
             const button = document.createElement('button');
             button.className = 'choice';
             button.innerText = choice;
             button.onclick = () => onSubmitAnswer(button, choice);
             choicesElement.appendChild(button);
-            console.log('Button added:', button); // Hata ayıklama için
         });
     } else {
         console.error('Question choices are undefined');
@@ -52,7 +50,5 @@ export function showCorrectAnswer(correctAnswer) {
         }
         button.disabled = true;
     });
-    setTimeout(() => {
-        // choicesElement.innerHTML = ''; // Sonraki soru için temizliyoruz
-    }, 2000);
+    setTimeout(() => {}, 2000);
 }

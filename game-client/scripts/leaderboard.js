@@ -1,5 +1,3 @@
-// leaderboard.js
-
 export function showLeaderboard(scores) {
     const leaderboardElement = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboard-list');
