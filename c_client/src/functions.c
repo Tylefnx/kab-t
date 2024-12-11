@@ -53,8 +53,6 @@ void show_question(const char *question, const int *choices, int num_choices)
     wrefresh(win);
 }
 
-#include <time.h>
-
 void handle_message(const char *message)
 {
     JSON_Value *root_value = json_parse_string(message);
@@ -107,7 +105,6 @@ void handle_message(const char *message)
         show_question(question, choices, num_choices);
 
         mvwprintw(win, num_choices + 5, 1, "Time remaining: %d seconds", timeout);
-        mvwprintw(win, num_choices + 6, 1, "Enter the number of your choice and press Enter:");
         wrefresh(win);
 
         struct timespec sleep_time = {1, 0}; // 1 saniye
@@ -115,7 +112,7 @@ void handle_message(const char *message)
 
         for (int remaining_time = timeout - 1; remaining_time >= 0; remaining_time--)
         {
-            mvwprintw(win, num_choices + 5, 1, "Time remaining: %d seconds", remaining_time);
+            mvwprintw(win, num_choices + 5, 1, "Time remaining: %d seconds ", remaining_time);
             wrefresh(win);
             nanosleep(&sleep_time, NULL); // 1 saniye beklet
 
@@ -133,15 +130,16 @@ void handle_message(const char *message)
                     send_answer(player_id, question_id, choices[choice_index]);
                     wrefresh(win);
                     answered = 1; // Kullanıcı cevap verdi
-                    break;
                 }
             }
         }
 
-        if (!answered) // Kullanıcı cevap vermediyse süre dolduğunda doğru cevabı göster
+        if (!answered) // Kullanıcı cevap vermediyse
         {
-            mvwprintw(win, num_choices + 7, 1, "Time's up! Correct Answer: %d", correct_answer);
+            mvwprintw(win, num_choices + 7, 1, "Time's up!");
         }
+        
+        mvwprintw(win, num_choices + 8, 1, "Correct Answer: %d", correct_answer);
 
         wrefresh(win);
         free(choices);
@@ -177,6 +175,7 @@ void handle_message(const char *message)
 
     json_value_free(root_value); // JSON nesnesini serbest bırak
 }
+
 
 
 int callback_client(struct lws *wsi, enum lws_callback_reasons reason,

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"game-server/models"
 	"game-server/question"
+	"sort"
 	"sync"
 	"time"
 
@@ -57,6 +58,11 @@ func (s *Server) BroadcastLeaderboard() {
 	for id, score := range s.scores {
 		scores = append(scores, models.Player{ID: id, Score: score})
 	}
+
+	// Skorları azalan sırada sıralayalım
+	sort.Slice(scores, func(i, j int) bool {
+		return scores[i].Score > scores[j].Score
+	})
 
 	fmt.Printf("Broadcasting leaderboard: %+v\n", scores) // Gönderilen veriyi loglayalım
 

@@ -58,7 +58,7 @@ int main()
     noecho();
 
     // Kullanıcıdan player_id al
-    mvprintw(0, 0, "Enter your Player ID: ");
+    mvprintw(0, 0, "Enter your Player Name: ");
     echo();
     getnstr(player_id, sizeof(player_id) - 1); // Maksimum 50 karakter al
     noecho();
