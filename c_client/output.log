@@ -1,0 +1,103 @@
+==73387== Memcheck, a memory error detector
+==73387== Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.
+==73387== Using Valgrind-3.23.0 and LibVEX; rerun with -h for copyright info
+==73387== Command: ./program
+==73387== Parent PID: 59436
+==73387== 
+==73387== Invalid read of size 8
+==73387==    at 0x494DF40: json_object_array_length (in /nix/store/54s8ad609i5p99bc84lak763jyk2rysd-json-c-0.17/lib/libjson-c.so.5.3.0)
+==73387==    by 0x40159C: handle_message (in /home/tylefnx/Documents/.dev/kab-t/c_client/program)
+==73387==    by 0x4016B7: callback_client (in /home/tylefnx/Documents/.dev/kab-t/c_client/program)
+==73387==    by 0x492735D: lws_ws_client_rx_sm (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x49265D2: lws_ws_handshake_client (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x491CE69: lws_read_h1 (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x49253A1: rops_handle_POLLIN_ws (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x49081D4: lws_service_do_ripe_rxflow (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x48E81B4: _lws_plat_service_forced_tsi (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x48E8428: _lws_plat_service_tsi (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x4908634: lws_service (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x4012AC: main (in /home/tylefnx/Documents/.dev/kab-t/c_client/program)
+==73387==  Address 0x28 is not stack'd, malloc'd or (recently) free'd
+==73387== 
+==73387== 
+==73387== Process terminating with default action of signal 11 (SIGSEGV): dumping core
+==73387==  Access not within mapped region at address 0x28
+==73387==    at 0x494DF40: json_object_array_length (in /nix/store/54s8ad609i5p99bc84lak763jyk2rysd-json-c-0.17/lib/libjson-c.so.5.3.0)
+==73387==    by 0x40159C: handle_message (in /home/tylefnx/Documents/.dev/kab-t/c_client/program)
+==73387==    by 0x4016B7: callback_client (in /home/tylefnx/Documents/.dev/kab-t/c_client/program)
+==73387==    by 0x492735D: lws_ws_client_rx_sm (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x49265D2: lws_ws_handshake_client (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x491CE69: lws_read_h1 (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x49253A1: rops_handle_POLLIN_ws (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x49081D4: lws_service_do_ripe_rxflow (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x48E81B4: _lws_plat_service_forced_tsi (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x48E8428: _lws_plat_service_tsi (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x4908634: lws_service (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x4012AC: main (in /home/tylefnx/Documents/.dev/kab-t/c_client/program)
+==73387==  If you believe this happened as a result of a stack
+==73387==  overflow in your program's main thread (unlikely but
+==73387==  possible), you can try to increase the size of the
+==73387==  main thread stack using the --main-stacksize= flag.
+==73387==  The main thread stack size used in this run was 8388608.
+==73387== 
+==73387== HEAP SUMMARY:
+==73387==     in use at exit: 465,615 bytes in 274 blocks
+==73387==   total heap usage: 317 allocs, 43 frees, 488,521 bytes allocated
+==73387== 
+==73387== 9 bytes in 1 blocks are possibly lost in loss record 7 of 105
+==73387==    at 0x48467D9: malloc (in /nix/store/jlcmn1sc1k1ryzk2lzxs3af4m1ghmdy6-valgrind-3.23.0/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==73387==    by 0x4A03FFD: strdup (in /nix/store/wn7v2vhyyyi6clcyn0s9ixvl7d4d87ic-glibc-2.40-36/lib/libc.so.6)
+==73387==    by 0x48A34D5: tparm_setup (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x48A67E1: _nc_tiparm (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x488347B: _nc_mvcur_init_sp (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x4883EE7: newterm_sp (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x48841C7: newterm (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x487FDEF: initscr (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x401287: main (in /home/tylefnx/Documents/.dev/kab-t/c_client/program)
+==73387== 
+==73387== 24 bytes in 1 blocks are possibly lost in loss record 32 of 105
+==73387==    at 0x48467D9: malloc (in /nix/store/jlcmn1sc1k1ryzk2lzxs3af4m1ghmdy6-valgrind-3.23.0/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==73387==    by 0x4A6B1A5: tsearch (in /nix/store/wn7v2vhyyyi6clcyn0s9ixvl7d4d87ic-glibc-2.40-36/lib/libc.so.6)
+==73387==    by 0x48A34F0: tparm_setup (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x48A67E1: _nc_tiparm (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x488347B: _nc_mvcur_init_sp (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x4883EE7: newterm_sp (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x48841C7: newterm (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x487FDEF: initscr (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x401287: main (in /home/tylefnx/Documents/.dev/kab-t/c_client/program)
+==73387== 
+==73387== 168 bytes in 1 blocks are possibly lost in loss record 63 of 105
+==73387==    at 0x484E27A: calloc (in /nix/store/jlcmn1sc1k1ryzk2lzxs3af4m1ghmdy6-valgrind-3.23.0/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==73387==    by 0x48A344E: tparm_setup (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x48A67E1: _nc_tiparm (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x488347B: _nc_mvcur_init_sp (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x4883EE7: newterm_sp (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x48841C7: newterm (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x487FDEF: initscr (in /nix/store/1p1j0iv3c909kcs4d5300kcsnlwmbwyj-ncurses-6.4.20221231/lib/libncursesw.so.6.4)
+==73387==    by 0x401287: main (in /home/tylefnx/Documents/.dev/kab-t/c_client/program)
+==73387== 
+==73387== 930 (48 direct, 882 indirect) bytes in 1 blocks are definitely lost in loss record 80 of 105
+==73387==    at 0x48467D9: malloc (in /nix/store/jlcmn1sc1k1ryzk2lzxs3af4m1ghmdy6-valgrind-3.23.0/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==73387==    by 0x494CB0A: json_object_new_object (in /nix/store/54s8ad609i5p99bc84lak763jyk2rysd-json-c-0.17/lib/libjson-c.so.5.3.0)
+==73387==    by 0x494FCC1: json_tokener_parse_ex (in /nix/store/54s8ad609i5p99bc84lak763jyk2rysd-json-c-0.17/lib/libjson-c.so.5.3.0)
+==73387==    by 0x4950936: json_tokener_parse_verbose (in /nix/store/54s8ad609i5p99bc84lak763jyk2rysd-json-c-0.17/lib/libjson-c.so.5.3.0)
+==73387==    by 0x495099D: json_tokener_parse (in /nix/store/54s8ad609i5p99bc84lak763jyk2rysd-json-c-0.17/lib/libjson-c.so.5.3.0)
+==73387==    by 0x401554: handle_message (in /home/tylefnx/Documents/.dev/kab-t/c_client/program)
+==73387==    by 0x4016B7: callback_client (in /home/tylefnx/Documents/.dev/kab-t/c_client/program)
+==73387==    by 0x492735D: lws_ws_client_rx_sm (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x49265D2: lws_ws_handshake_client (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x491CE69: lws_read_h1 (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x49253A1: rops_handle_POLLIN_ws (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387==    by 0x49081D4: lws_service_do_ripe_rxflow (in /nix/store/b7kbmm2fw5yx15hl49h8ldzl1l7laihg-libwebsockets-4.3.3/lib/libwebsockets.so.19)
+==73387== 
+==73387== LEAK SUMMARY:
+==73387==    definitely lost: 48 bytes in 1 blocks
+==73387==    indirectly lost: 882 bytes in 8 blocks
+==73387==      possibly lost: 201 bytes in 3 blocks
+==73387==    still reachable: 464,484 bytes in 262 blocks
+==73387==         suppressed: 0 bytes in 0 blocks
+==73387== Reachable blocks (those to which a pointer was found) are not shown.
+==73387== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==73387== 
+==73387== For lists of detected and suppressed errors, rerun with: -s
+==73387== ERROR SUMMARY: 5 errors from 5 contexts (suppressed: 0 from 0)
