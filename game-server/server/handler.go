@@ -70,7 +70,7 @@ func (h *Handler) BroadcastQuestion(question map[string]interface{}) {
 			"question": question,
 			"timeout":  10,
 		}
-		fmt.Printf("Sending question to client: %+v\n", response) // Hata ayıklama için
+		fmt.Printf("Sending question to client: %+v\n", response)
 		h.sendResponse(conn, response)
 	}
 }

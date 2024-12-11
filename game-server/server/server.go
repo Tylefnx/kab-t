@@ -64,7 +64,7 @@ func (s *Server) BroadcastLeaderboard() {
 		return scores[i].Score > scores[j].Score
 	})
 
-	fmt.Printf("Broadcasting leaderboard: %+v\n", scores) // Gönderilen veriyi loglayalım
+	fmt.Printf("Broadcasting leaderboard: %+v\n", scores)
 
 	for _, conn := range s.queue {
 		response := map[string]interface{}{
