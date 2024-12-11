@@ -5,20 +5,22 @@
 #include <libwebsockets.h>
 #include <curl/curl.h>
 #include "parson.h"
-#include "functions.h" // Yeni eklediğiniz .h dosyası
+#include "functions.h"
 
+WINDOW *win;
+char player_id[51];
+int interrupted = 0;
 struct lws *client_wsi;
-
-static const struct lws_protocols protocols[] = {
+struct lws_protocols protocols[] = {
     {
         "example-protocol",
-        callback_client, // functions.c dosyasına taşıdığımız fonksiyon
+        callback_client,
         0,
         4096,
         0, // `id` alanı eklendi
         NULL, NULL, 0
     },
-    {NULL, NULL, 0, 0, 0, NULL, NULL, 0} /* terminator */
+    {NULL, NULL, 0, 0, 0, NULL, NULL, 0} 
 };
 
 int main()
@@ -60,7 +62,7 @@ int main()
     // Kullanıcıdan player_id al
     mvprintw(0, 0, "Enter your Player Name: ");
     echo();
-    getnstr(player_id, sizeof(player_id) - 1); // Maksimum 50 karakter al
+    getnstr(player_id, sizeof(player_id) - 1);
     noecho();
 
     win = newwin(15, 50, 5, 5);

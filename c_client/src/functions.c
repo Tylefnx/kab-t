@@ -6,10 +6,6 @@
 #include <curl/curl.h>
 #include "parson.h"
 #include "functions.h"
-// Global değişkenlerin tanımlanması
-WINDOW *win;
-char player_id[51];
-int interrupted = 0;
 
 void send_answer(const char *player_id, int question_id, int choice)
 {
@@ -53,6 +49,31 @@ void show_question(const char *question, const int *choices, int num_choices)
     wrefresh(win);
 }
 
+int callback_client(struct lws *wsi, enum lws_callback_reasons reason,
+                    void *user, void *in, size_t len)
+{
+    switch (reason)
+    {
+    case LWS_CALLBACK_CLIENT_ESTABLISHED:
+        printf("Client connected\n");
+        break;
+    case LWS_CALLBACK_CLIENT_RECEIVE:
+        handle_message((char *)in);
+        break;
+    case LWS_CALLBACK_CLIENT_WRITEABLE:
+        // WebSocket üzerinden yazma işlemleri buraya eklenir.
+        break;
+    case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
+    case LWS_CALLBACK_CLIENT_CLOSED:
+        interrupted = 1;
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
+
 void handle_message(const char *message)
 {
     JSON_Value *root_value = json_parse_string(message);
@@ -78,7 +99,7 @@ void handle_message(const char *message)
         const char *question = json_object_get_string(question_object, "text");
         JSON_Array *choices_array = json_object_get_array(question_object, "choices");
         int question_id = (int)json_object_get_number(question_object, "id");
-        int timeout = 10; // Her sorunun süresi 10 saniye
+        int timeout = 10;
         int correct_answer = (int)json_object_get_number(question_object, "answer");
 
         if (!question || !choices_array)
@@ -107,40 +128,39 @@ void handle_message(const char *message)
         mvwprintw(win, num_choices + 5, 1, "Time remaining: %d seconds", timeout);
         wrefresh(win);
 
-        struct timespec sleep_time = {1, 0}; // 1 saniye
-        int answered = 0; // Kullanıcı cevap verdi mi kontrolü
+        struct timespec sleep_time = {1, 0};
+        int answered = 0;
 
         for (int remaining_time = timeout - 1; remaining_time >= 0; remaining_time--)
         {
-            mvwprintw(win, num_choices + 5, 1, "Time remaining: %d seconds ", remaining_time);
+            mvwprintw(win, num_choices + 5, 1, "Time remaining: %d seconds", remaining_time);
             wrefresh(win);
-            nanosleep(&sleep_time, NULL); // 1 saniye beklet
+            nanosleep(&sleep_time, NULL);
 
-            nodelay(win, TRUE); // Non-blocking mode
+            nodelay(win, TRUE);
             int ch = wgetch(win);
-            nodelay(win, FALSE); // Reset to blocking mode
+            nodelay(win, FALSE);
 
-            if (ch != ERR) // There is a key press
+            if (ch != ERR)
             {
                 int choice_index = ch - '1';
 
                 if (choice_index >= 0 && choice_index < num_choices)
                 {
-                    mvwprintw(win, num_choices + 7, 1, "You selected choice %d: %d", choice_index + 1, choices[choice_index]);
+                    mvwprintw(win, num_choices + 6, 1, "You selected choice %d: %d", choice_index + 1, choices[choice_index]);
                     send_answer(player_id, question_id, choices[choice_index]);
                     wrefresh(win);
-                    answered = 1; // Kullanıcı cevap verdi
+                    answered = 1;
                 }
             }
         }
 
-        if (!answered) // Kullanıcı cevap vermediyse
+        if (!answered)
         {
             mvwprintw(win, num_choices + 7, 1, "Time's up!");
         }
-        
-        mvwprintw(win, num_choices + 8, 1, "Correct Answer: %d", correct_answer);
 
+        mvwprintw(win, num_choices + 8, 1, "Correct Answer: %d", correct_answer);
         wrefresh(win);
         free(choices);
     }
@@ -166,6 +186,34 @@ void handle_message(const char *message)
 
             mvwprintw(win, i + 3, 1, "%d. %s: %d", i + 1, player_id, score);
         }
+
+        wrefresh(win);
+
+        while (wgetch(win) != '\n');
+
+        werase(win);
+        mvwprintw(win, 1, 1, "Re-entering queue...");
+        wrefresh(win);
+
+        // Yeniden bağlantı için gerekli bilgileri ayarlayalım
+        struct lws_client_connect_info ccinfo = {0};
+        ccinfo.context = lws_get_context(client_wsi);
+        ccinfo.address = "localhost";
+        ccinfo.port = 8080;
+        ccinfo.path = "/";
+        ccinfo.host = lws_canonical_hostname(lws_get_context(client_wsi));
+        ccinfo.origin = "origin";
+        ccinfo.protocol = protocols[0].name;
+
+        if (!lws_client_connect_via_info(&ccinfo))
+        {
+            mvwprintw(win, 2, 1, "Failed to re-enter queue.");
+        }
+        else
+        {
+            mvwprintw(win, 2, 1, "Successfully re-entered queue.");
+        }
+
         wrefresh(win);
     }
     else
@@ -174,30 +222,4 @@ void handle_message(const char *message)
     }
 
     json_value_free(root_value); // JSON nesnesini serbest bırak
-}
-
-
-
-int callback_client(struct lws *wsi, enum lws_callback_reasons reason,
-                    void *user, void *in, size_t len)
-{
-    switch (reason)
-    {
-    case LWS_CALLBACK_CLIENT_ESTABLISHED:
-        printf("Client connected\n");
-        break;
-    case LWS_CALLBACK_CLIENT_RECEIVE:
-        handle_message((char *)in);
-        break;
-    case LWS_CALLBACK_CLIENT_WRITEABLE:
-        // WebSocket üzerinden yazma işlemleri buraya eklenir.
-        break;
-    case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
-    case LWS_CALLBACK_CLIENT_CLOSED:
-        interrupted = 1;
-        break;
-    default:
-        break;
-    }
-    return 0;
 }
