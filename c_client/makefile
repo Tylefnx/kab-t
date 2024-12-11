@@ -1,18 +1,47 @@
+# Compiler
 CC = gcc
-CFLAGS = -Wall -g -fsanitize=address -I.
-LIBS = -lncurses -lwebsockets -lparson
 
-TARGET = program
-SRCS = main.c
-OBJS = $(SRCS:.c=.o)
+# Directories
+SRCDIR = src
+OBJDIR = obj
+BINDIR = bin
 
-all: $(TARGET)
+# Executable
+EXEC = $(BINDIR)/server
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+# Source and Object files
+SOURCES = $(wildcard $(SRCDIR)/*.c)
+OBJECTS = $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SOURCES))
 
-%.o: %.c
+# Include directories
+INCLUDES = -Iinclude
+
+# Libraries
+LIBS = -lncurses -lwebsockets -lcurl -lparson
+
+# Compiler flags
+CFLAGS = -Wall -Wextra $(INCLUDES)
+LDFLAGS = $(LIBS)
+
+# Default target
+all: $(EXEC)
+
+# Link
+$(EXEC): $(OBJECTS)
+	@mkdir -p $(BINDIR)
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+# Compile
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Clean
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -rf $(OBJDIR) $(BINDIR)
+
+# Run
+run: $(EXEC)
+	$(EXEC)
+
+.PHONY: all clean run
