@@ -81,18 +81,17 @@ void show_question(const char *question, const int *choices, int num_choices)
     wrefresh(win);
 }
 
-
 int callback_client(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len)
 {
     switch (reason)
     {
-        case LWS_CALLBACK_CLIENT_RECEIVE:
-            handle_message((const char *)in);
-            break;
-        case LWS_CALLBACK_CLIENT_WRITEABLE:
-            break;
-        default:
-            break;
+    case LWS_CALLBACK_CLIENT_RECEIVE:
+        handle_message((const char *)in);
+        break;
+    case LWS_CALLBACK_CLIENT_WRITEABLE:
+        break;
+    default:
+        break;
     }
     return 0;
 }
@@ -152,7 +151,7 @@ void handle_message(const char *message)
         wrefresh(win);
 
         struct timespec sleep_time = {1, 0}; // 1 saniye
-        int answered = 0; // Kullanıcı cevap verdi mi kontrolü
+        int answered = 0;                    // Kullanıcı cevap verdi mi kontrolü
 
         for (int remaining_time = timeout - 1; remaining_time >= 0; remaining_time--)
         {
@@ -182,7 +181,7 @@ void handle_message(const char *message)
         {
             mvwprintw(win, num_choices + 7, 1, "Time's up!");
         }
-        
+
         mvwprintw(win, num_choices + 8, 1, "Correct Answer: %d", correct_answer);
 
         wrefresh(win);
@@ -213,16 +212,27 @@ void handle_message(const char *message)
 
         wrefresh(win);
 
-        while (wgetch(win) != '\n');
+        while (wgetch(win) != '\n')
+            ;
 
         werase(win);
         mvwprintw(win, 1, 1, "Re-entering queue...");
         wrefresh(win);
 
-        // Mevcut bağlantıyı kapat
-        struct lws_client_connect_info ccinfo = {0};
-        // Yeniden bağlantı için connect_and_join_queue fonksiyonunu kullanalım
-        if (connect_and_join_queue(&ccinfo.context, "localhost", 8080, "/", protocols[0].name) != 0)
+        ccinfo.context = lws_get_context(client_wsi);
+        ccinfo.address = "localhost";
+        ccinfo.port = 8080;
+        ccinfo.path = "/ws"; // Bu yolun doğru olduğundan emin olun
+        ccinfo.host = lws_canonical_hostname(lws_get_context(client_wsi));
+        ccinfo.origin = "origin";
+        ccinfo.protocol = protocols[0].name;
+        // if (connect_and_join_queue(ccinfo.context, "localhost", 8080, "/ws", protocols[0].name) != 0)
+        // {
+        //     endwin();
+        //     return -1;
+        // }
+
+        if (!lws_client_connect_via_info(&ccinfo))
         {
             mvwprintw(win, 2, 1, "Failed to re-enter queue.");
         }
