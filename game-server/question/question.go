@@ -16,7 +16,6 @@ func GenerateQuestions(n int) []map[string]interface{} {
 			"answer":  answer,
 		}
 		questions = append(questions, question)
-		fmt.Printf("Generated question: %+v\n", question) // Hata ayıklama için
 	}
 	return questions
 }
