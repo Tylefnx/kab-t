@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
+#include <time.h>
 #include <curl/curl.h>
 #include "parson.h"
 #include "functions.h"
-
 // Global değişkenlerin tanımlanması
 WINDOW *win;
 char player_id[51];
@@ -53,6 +53,7 @@ void show_question(const char *question, const int *choices, int num_choices)
     wrefresh(win);
 }
 
+#include <time.h>
 
 void handle_message(const char *message)
 {
@@ -79,6 +80,8 @@ void handle_message(const char *message)
         const char *question = json_object_get_string(question_object, "text");
         JSON_Array *choices_array = json_object_get_array(question_object, "choices");
         int question_id = (int)json_object_get_number(question_object, "id");
+        int timeout = 10; // Her sorunun süresi 10 saniye
+        int correct_answer = (int)json_object_get_number(question_object, "answer");
 
         if (!question || !choices_array)
         {
@@ -103,20 +106,44 @@ void handle_message(const char *message)
 
         show_question(question, choices, num_choices);
 
-        int ch = wgetch(win);
-        int choice_index = ch - '1';
-
-        if (choice_index >= 0 && choice_index < num_choices)
-        {
-            mvwprintw(win, num_choices + 5, 1, "You selected choice %d: %d", choice_index + 1, choices[choice_index]);
-            send_answer(player_id, question_id, choices[choice_index]);
-        }
-        else
-        {
-            mvwprintw(win, num_choices + 5, 1, "Invalid choice, please try again.");
-        }
+        mvwprintw(win, num_choices + 5, 1, "Time remaining: %d seconds", timeout);
+        mvwprintw(win, num_choices + 6, 1, "Enter the number of your choice and press Enter:");
         wrefresh(win);
 
+        struct timespec sleep_time = {1, 0}; // 1 saniye
+        int answered = 0; // Kullanıcı cevap verdi mi kontrolü
+
+        for (int remaining_time = timeout - 1; remaining_time >= 0; remaining_time--)
+        {
+            mvwprintw(win, num_choices + 5, 1, "Time remaining: %d seconds", remaining_time);
+            wrefresh(win);
+            nanosleep(&sleep_time, NULL); // 1 saniye beklet
+
+            nodelay(win, TRUE); // Non-blocking mode
+            int ch = wgetch(win);
+            nodelay(win, FALSE); // Reset to blocking mode
+
+            if (ch != ERR) // There is a key press
+            {
+                int choice_index = ch - '1';
+
+                if (choice_index >= 0 && choice_index < num_choices)
+                {
+                    mvwprintw(win, num_choices + 7, 1, "You selected choice %d: %d", choice_index + 1, choices[choice_index]);
+                    send_answer(player_id, question_id, choices[choice_index]);
+                    wrefresh(win);
+                    answered = 1; // Kullanıcı cevap verdi
+                    break;
+                }
+            }
+        }
+
+        if (!answered) // Kullanıcı cevap vermediyse süre dolduğunda doğru cevabı göster
+        {
+            mvwprintw(win, num_choices + 7, 1, "Time's up! Correct Answer: %d", correct_answer);
+        }
+
+        wrefresh(win);
         free(choices);
     }
     else if (status && strcmp(status, "answer") == 0)
@@ -150,8 +177,6 @@ void handle_message(const char *message)
 
     json_value_free(root_value); // JSON nesnesini serbest bırak
 }
-
-
 
 
 int callback_client(struct lws *wsi, enum lws_callback_reasons reason,
