@@ -168,7 +168,7 @@ void handle_message(const char *message)
         wrefresh(win);
 
         struct timespec sleep_time = {1, 0}; // 1 saniye
-        int answered = 0;                    // Kullanıcı cevap verdi mi kontrolü
+        int answered = 0;
 
         for (int remaining_time = timeout - 1; remaining_time >= 0; remaining_time--)
         {
@@ -176,11 +176,11 @@ void handle_message(const char *message)
             wrefresh(win);
             nanosleep(&sleep_time, NULL); // 1 saniye beklet
 
-            nodelay(win, TRUE); // Non-blocking mode
+            nodelay(win, TRUE);
             int ch = wgetch(win);
-            nodelay(win, FALSE); // Reset to blocking mode
+            nodelay(win, FALSE);
 
-            if (ch != ERR) // There is a key press
+            if (ch != ERR)
             {
                 int choice_index = ch - '1';
 
@@ -194,7 +194,7 @@ void handle_message(const char *message)
             }
         }
 
-        if (!answered) // Kullanıcı cevap vermediyse
+        if (!answered)
         {
             mvwprintw(win, num_choices + 7, 1, "Time's up!");
         }
@@ -239,11 +239,11 @@ void handle_message(const char *message)
         rejoin_queue();
 
         wrefresh(win);
-        json_value_free(root_value); // JSON nesnesini serbest bırakmayı unutmayalım
+        json_value_free(root_value);
     }
     else
     {
         fprintf(stderr, "JSON Format Error: %s\n", message);
-        json_value_free(root_value); // JSON nesnesini serbest bırakmayı unutmayalım
+        json_value_free(root_value);
     }
 }
