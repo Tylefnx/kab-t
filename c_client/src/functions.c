@@ -2,10 +2,43 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
-#include <time.h>
 #include <curl/curl.h>
 #include "parson.h"
 #include "functions.h"
+
+int connect_and_join_queue(struct lws_context **context, const char *address, int port, const char *path, const char *protocol)
+{
+    struct lws_context_creation_info info;
+    struct lws_client_connect_info ccinfo;
+
+    memset(&info, 0, sizeof(info));
+    info.port = CONTEXT_PORT_NO_LISTEN;
+    info.protocols = protocols;
+
+    *context = lws_create_context(&info);
+    if (!*context)
+    {
+        fprintf(stderr, "lws init failed\n");
+        return -1;
+    }
+
+    memset(&ccinfo, 0, sizeof(ccinfo));
+    ccinfo.context = *context;
+    ccinfo.address = address;
+    ccinfo.port = port;
+    ccinfo.path = path;
+    ccinfo.origin = "origin";
+    ccinfo.protocol = protocol;
+    client_wsi = lws_client_connect_via_info(&ccinfo);
+    if (!client_wsi)
+    {
+        fprintf(stderr, "Client connect failed\n");
+        lws_context_destroy(*context);
+        return -1;
+    }
+
+    return 0;
+}
 
 void send_answer(const char *player_id, int question_id, int choice)
 {
@@ -15,8 +48,8 @@ void send_answer(const char *player_id, int question_id, int choice)
     curl = curl_easy_init();
     if (curl)
     {
-        char postfields[150];
-        snprintf(postfields, sizeof(postfields), "{\"player_id\": \"%s\", \"question_id\": %d, \"answer\": %d}", player_id, question_id, choice);
+        char postfields[256];
+        snprintf(postfields, sizeof(postfields), "{\"player_id\":\"%s\",\"question_id\":%d,\"answer\":%d}", player_id, question_id, choice);
 
         struct curl_slist *headers = NULL;
         headers = curl_slist_append(headers, "Content-Type: application/json");
@@ -29,11 +62,10 @@ void send_answer(const char *player_id, int question_id, int choice)
         if (res != CURLE_OK)
             fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
 
-        curl_slist_free_all(headers); // Hafıza sızıntısını önlemek için header'ı serbest bırak
+        curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
     }
 }
-
 
 void show_question(const char *question, const int *choices, int num_choices)
 {
@@ -49,30 +81,21 @@ void show_question(const char *question, const int *choices, int num_choices)
     wrefresh(win);
 }
 
-int callback_client(struct lws *wsi, enum lws_callback_reasons reason,
-                    void *user, void *in, size_t len)
+
+int callback_client(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len)
 {
     switch (reason)
     {
-    case LWS_CALLBACK_CLIENT_ESTABLISHED:
-        printf("Client connected\n");
-        break;
-    case LWS_CALLBACK_CLIENT_RECEIVE:
-        handle_message((char *)in);
-        break;
-    case LWS_CALLBACK_CLIENT_WRITEABLE:
-        // WebSocket üzerinden yazma işlemleri buraya eklenir.
-        break;
-    case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
-    case LWS_CALLBACK_CLIENT_CLOSED:
-        interrupted = 1;
-        break;
-    default:
-        break;
+        case LWS_CALLBACK_CLIENT_RECEIVE:
+            handle_message((const char *)in);
+            break;
+        case LWS_CALLBACK_CLIENT_WRITEABLE:
+            break;
+        default:
+            break;
     }
     return 0;
 }
-
 
 void handle_message(const char *message)
 {
@@ -99,7 +122,7 @@ void handle_message(const char *message)
         const char *question = json_object_get_string(question_object, "text");
         JSON_Array *choices_array = json_object_get_array(question_object, "choices");
         int question_id = (int)json_object_get_number(question_object, "id");
-        int timeout = 10;
+        int timeout = 3; // Her sorunun süresi 10 saniye
         int correct_answer = (int)json_object_get_number(question_object, "answer");
 
         if (!question || !choices_array)
@@ -128,39 +151,40 @@ void handle_message(const char *message)
         mvwprintw(win, num_choices + 5, 1, "Time remaining: %d seconds", timeout);
         wrefresh(win);
 
-        struct timespec sleep_time = {1, 0};
-        int answered = 0;
+        struct timespec sleep_time = {1, 0}; // 1 saniye
+        int answered = 0; // Kullanıcı cevap verdi mi kontrolü
 
         for (int remaining_time = timeout - 1; remaining_time >= 0; remaining_time--)
         {
             mvwprintw(win, num_choices + 5, 1, "Time remaining: %d seconds", remaining_time);
             wrefresh(win);
-            nanosleep(&sleep_time, NULL);
+            nanosleep(&sleep_time, NULL); // 1 saniye beklet
 
-            nodelay(win, TRUE);
+            nodelay(win, TRUE); // Non-blocking mode
             int ch = wgetch(win);
-            nodelay(win, FALSE);
+            nodelay(win, FALSE); // Reset to blocking mode
 
-            if (ch != ERR)
+            if (ch != ERR) // There is a key press
             {
                 int choice_index = ch - '1';
 
                 if (choice_index >= 0 && choice_index < num_choices)
                 {
-                    mvwprintw(win, num_choices + 6, 1, "You selected choice %d: %d", choice_index + 1, choices[choice_index]);
+                    mvwprintw(win, num_choices + 7, 1, "You selected choice %d: %d", choice_index + 1, choices[choice_index]);
                     send_answer(player_id, question_id, choices[choice_index]);
                     wrefresh(win);
-                    answered = 1;
+                    answered = 1; // Kullanıcı cevap verdi
                 }
             }
         }
 
-        if (!answered)
+        if (!answered) // Kullanıcı cevap vermediyse
         {
             mvwprintw(win, num_choices + 7, 1, "Time's up!");
         }
-
+        
         mvwprintw(win, num_choices + 8, 1, "Correct Answer: %d", correct_answer);
+
         wrefresh(win);
         free(choices);
     }
@@ -195,17 +219,10 @@ void handle_message(const char *message)
         mvwprintw(win, 1, 1, "Re-entering queue...");
         wrefresh(win);
 
-        // Yeniden bağlantı için gerekli bilgileri ayarlayalım
+        // Mevcut bağlantıyı kapat
         struct lws_client_connect_info ccinfo = {0};
-        ccinfo.context = lws_get_context(client_wsi);
-        ccinfo.address = "localhost";
-        ccinfo.port = 8080;
-        ccinfo.path = "/";
-        ccinfo.host = lws_canonical_hostname(lws_get_context(client_wsi));
-        ccinfo.origin = "origin";
-        ccinfo.protocol = protocols[0].name;
-
-        if (!lws_client_connect_via_info(&ccinfo))
+        // Yeniden bağlantı için connect_and_join_queue fonksiyonunu kullanalım
+        if (connect_and_join_queue(&ccinfo.context, "localhost", 8080, "/", protocols[0].name) != 0)
         {
             mvwprintw(win, 2, 1, "Failed to re-enter queue.");
         }
@@ -215,11 +232,11 @@ void handle_message(const char *message)
         }
 
         wrefresh(win);
+        json_value_free(root_value); // JSON nesnesini serbest bırakmayı unutmayalım
     }
     else
     {
         fprintf(stderr, "JSON Format Error: %s\n", message);
+        json_value_free(root_value); // JSON nesnesini serbest bırakmayı unutmayalım
     }
-
-    json_value_free(root_value); // JSON nesnesini serbest bırak
 }

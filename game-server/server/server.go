@@ -41,7 +41,7 @@ func (s *Server) StartQuiz() {
 	for _, question := range questions {
 		fmt.Printf("Broadcasting question: %+v\n", question) // Hata ayıklama için
 		s.handler.BroadcastQuestion(question)
-		time.Sleep(10 * time.Second) // 10 saniye bekleme süresi
+		time.Sleep(3 * time.Second) // 10 saniye bekleme süresi
 		s.handler.ShowCorrectAnswer(question)
 		s.calculateScores(question)
 		time.Sleep(2 * time.Second) // 2 saniye doğru cevabı gösterme süresi

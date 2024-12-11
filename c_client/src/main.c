@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
-#include <libwebsockets.h>
-#include <curl/curl.h>
-#include "parson.h"
 #include "functions.h"
 
 WINDOW *win;
@@ -17,7 +14,7 @@ struct lws_protocols protocols[] = {
         callback_client,
         0,
         4096,
-        0, // `id` alanı eklendi
+        0,
         NULL, NULL, 0
     },
     {NULL, NULL, 0, 0, 0, NULL, NULL, 0} 
@@ -25,35 +22,7 @@ struct lws_protocols protocols[] = {
 
 int main()
 {
-    struct lws_context_creation_info info;
-    struct lws_client_connect_info ccinfo;
     struct lws_context *context;
-
-    memset(&info, 0, sizeof(info));
-    info.port = CONTEXT_PORT_NO_LISTEN;
-    info.protocols = protocols;
-
-    context = lws_create_context(&info);
-    if (!context)
-    {
-        fprintf(stderr, "lws init failed\n");
-        return -1;
-    }
-
-    memset(&ccinfo, 0, sizeof(ccinfo));
-    ccinfo.context = context;
-    ccinfo.address = "localhost";
-    ccinfo.port = 8080;
-    ccinfo.path = "/ws";
-    ccinfo.origin = "origin";
-    ccinfo.protocol = protocols[0].name;
-    client_wsi = lws_client_connect_via_info(&ccinfo);
-    if (!client_wsi)
-    {
-        fprintf(stderr, "Client connect failed\n");
-        lws_context_destroy(context);
-        return -1;
-    }
 
     initscr();
     cbreak();
@@ -68,6 +37,15 @@ int main()
     win = newwin(15, 50, 5, 5);
     box(win, 0, 0);
     wrefresh(win);
+
+    // Log seviyesini azalt
+    lws_set_log_level(LLL_ERR | LLL_WARN, NULL);
+
+    if (connect_and_join_queue(&context, "localhost", 8080, "/ws", protocols[0].name) != 0)
+    {
+        endwin();
+        return -1;
+    }
 
     while (!interrupted)
     {
