@@ -7,7 +7,7 @@ OBJDIR = obj
 BINDIR = bin
 
 # Executable
-EXEC = $(BINDIR)/server
+EXEC = $(BINDIR)/client
 
 # Source and Object files
 SOURCES = $(wildcard $(SRCDIR)/*.c)

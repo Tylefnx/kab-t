@@ -138,7 +138,7 @@ void handle_message(const char *message)
         const char *question = json_object_get_string(question_object, "text");
         JSON_Array *choices_array = json_object_get_array(question_object, "choices");
         int question_id = (int)json_object_get_number(question_object, "id");
-        int timeout = 5; // Her sorunun süresi 10 saniye
+        int timeout = 10; // Her sorunun süresi 10 saniye
         int correct_answer = (int)json_object_get_number(question_object, "answer");
 
         if (!question || !choices_array)
